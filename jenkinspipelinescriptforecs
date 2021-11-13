@@ -1,0 +1,36 @@
+   pipeline {
+       agent any 
+       
+        environment {
+         registry="176199261253.dkr.ecr.ap-south-1.amazonaws.com/jenkins-docker-ecs"
+     }
+       
+    
+           stages {
+        
+              stage('checkout') {
+            steps {
+               checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: '55250c3b-3d81-4767-9140-afeef5d1bc7f', url: 'https://github.com/mohanshukla/myecsjenkinsrepo.git']]])           
+        
+            }
+        } 
+              stage('Building image') {
+      steps {
+        script {
+          dockerImage = docker.build registry
+        }
+      }
+    }
+             stage('Pushing to ECR')
+    {
+        steps{
+            script{
+                sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 176199261253.dkr.ecr.ap-south-1.amazonaws.com'
+                sh 'docker push 176199261253.dkr.ecr.ap-south-1.amazonaws.com/jenkins-docker-ecs:latest'
+            }
+        }
+     }
+    }
+   }
+ 
+
